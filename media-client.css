@@ -1,0 +1,139 @@
+* {
+	border: 0px;
+	padding:0px;
+	margin: 0px;
+}
+body {
+	background-color:green;
+}
+#search_bar {
+	width: 792px;
+	height: 20px;
+	border: 0px;
+	float: left;
+	padding:4px;
+	position: relative;
+	background-color:white;
+}
+/* Style the search box inside the navigation bar */
+@import url("//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css");
+#search_bar_input {
+	width: 75%;
+	border: 1px dotted black;
+	text-indent: 30px;
+}
+#search_bar_button {
+	width: 24%;
+	border: 1px dotted black;
+	text-indent: 30px;
+}
+#search_bar .fa-search { 
+  position: absolute;
+  top: 24px;
+  left: 7px;
+  font-size: 15px;
+}
+#search_results {
+	width: 792px;
+	height: 238px;
+	padding:4px;
+	float: left;
+	overflow:auto;
+	background-color:white;
+}
+
+.search_results_thumbail_div {
+	position:relative;
+	display:inline-block;
+}
+
+.search_results_thumbail_div .thumbnail {
+	position:relative;
+	z-index:1;
+	top:0;
+	left:0;
+}
+
+.thumbnail {
+    position:relative;
+    margin: 4px;
+    border-radius: 16px;  /* Rounded border */
+    width: 185px; /* Set a small width */
+}
+.search_pages {
+	width:100%;
+	text-align:center;
+	border: 0px;
+	background-color:white;
+}
+#playlist_reel {
+	width: 792px;
+	height: 116px;
+	padding:4px;
+	clear: both;
+	overflow-x: auto;
+	white-space: nowrap;
+	background-color:gray;
+}
+
+.playlist_reel_thumbail_div {
+	position:relative;
+	display:inline-block;
+}
+
+.playlist_reel_thumbail_div .thumbnail {
+	position:relative;
+	z-index:1;
+	top:0;
+	left:0;
+}
+
+.play_icon {
+	position:absolute;
+	z-index:2;
+	width:50;
+	top:27; /*(104-50)/2 */
+	left:67.5; /*(185-50)/2 */
+}
+
+.delete_icon {
+	position:absolute;
+	z-index:2;
+	width:20;
+	top:5; /*TOP*/
+	left:160; /*(185-20-5) */
+}
+
+.download_icon {
+	position:absolute;
+	z-index:2;
+	width:20;
+	top:5; /*TOP*/
+	left:160; /*(185-20-5) */
+}
+
+.downloaded_icon {
+	position:absolute;
+	z-index:2;
+	width:20;
+	top:5; /*TOP*/
+	left:160; /*(185-20-5) */
+}
+
+.spinner {
+    position:absolute;                                                 
+    z-index:2;                                                         
+    top:42; /*(139-50-5)/2 */                                         
+    left:65; /*(185-50-5)/2 */ 
+    border: 5px solid #f3f3f3; /* Light grey */
+    border-top: 5px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

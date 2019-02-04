@@ -1,0 +1,18 @@
+DROP DATABASE IF EXISTS MediaServer;
+CREATE DATABASE IF NOT EXISTS MediaServer;
+USE MediaServer;
+
+CREATE TABLE YoutubeMovies (
+    id INT NOT NULL AUTO_INCREMENT,
+    title VARCHAR(1023),
+    url VARCHAR(1023) NOT NULL,
+    thumbnail_url VARCHAR(1023) NOT NULL,
+    video_id VARCHAR(1023) NOT NULL,
+    video_filename VARCHAR(1023) NOT NULL,
+    video_path VARCHAR(1023) NOT NULL,
+    create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    delete_date TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (id)
+);
+
+GRANT ALL PRIVILEGES ON MediaServer.* TO 'pi'@'%';
