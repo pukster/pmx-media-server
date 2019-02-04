@@ -10,16 +10,16 @@ import os
 import mysql.connector
 
 videos=[]
-video_dir='/media/peyman/Alpha/megashare/videos/raspi'
+video_dir='/path/to/videos'
 mydb=None
 mycursor=None
 
 def connect_db ():
     mydb=mysql.connector.connect(
-            host="192.168.0.16",
-            port="3306",
-            user="pi",
-            passwd="prilyx123",
+            host="192.168.0.123",
+            port="1234",
+            user="username",
+            passwd="password",
             database="MediaServer"
             )
     mycursor=mydb.cursor()
