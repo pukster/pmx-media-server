@@ -49,7 +49,6 @@ function onCloseClick() {
  * Not Supported
  */
 function output(str) {
-    console.log(str)
     /*
   var log = document.getElementById("log");
   var escaped = str.replace(/&/, "&amp;").replace(/</, "&lt;").
@@ -68,7 +67,8 @@ function handle_message(message)
     }
     else if (message.type=='add_to_playlist')
     {
-        add_to_playlist(message.data.video_hash,message.data.thumbnail_url)
+        on_search_thumbnail_click_processed(message.data);
+        add_to_playlist(message.data)
     }
     else
     {
@@ -76,22 +76,51 @@ function handle_message(message)
     }
 }
 
-/*
-get_search_results=function(begin,end)
+function get_search_spinner_id(data)
 {
-    var yt_urls={};
+    return 'search-results-thumbnail-spinner-'+data.html_id;
+}
 
-    for(var i=0;i<(end-begin);i++)
-    {
-        yt_urls[i]='https://www.youtube.com/watch?v=M7XM597XO94';
-    }
-
-    return yt_urls;
-};
-*/
-
-function create_search_thumbnail(div_id,link_id,thumbnail_url,request)
+function get_search_download_id(data)
 {
+    return 'search-results-thumbnail-download-'+data.html_id;
+}
+
+function get_search_error_id(data)
+{
+    return 'search-results-thumbnail-error-'+data.html_id;
+}
+
+function get_playlist_thumbnail_div_id(data)
+{
+    return 'search-results-thumbnail-error-'+data.html_id;
+}
+
+function get_playlist_thumbnail_link_1_id(data)
+{
+    return 'playlist-thumbnail-link-1-'+data.html_id;
+}
+
+function get_playlist_thumbnail_link_2_id(data)
+{
+    return 'playlist-thumbnail-link-2-'+data.html_id;
+}
+
+function create_search_thumbnail(index,data)
+{
+    var div_id='search-thumbnail-div-'+index;
+    var link_id='search-thumbnail-link-'+index;
+    var request={};
+    var video_id=data.video_id;
+    var thumbnail_url=data.thumbnail_url;
+    var spinner_id=get_search_spinner_id(data);
+    var download_id=get_search_download_id(data);
+    var error_id=get_search_error_id(data);
+
+    request.type='add_to_playlist';
+    request.index=index;
+    request.video_id=video_id;
+
     /*Add new Thumbnail*/
     $('<div>',{
         id:div_id,
@@ -101,86 +130,99 @@ function create_search_thumbnail(div_id,link_id,thumbnail_url,request)
     $('<a>',{
         id:link_id,
         href:'#',
-        click:function(){on_search_thumbnail_clicked(div_id, link_id,request);return false;}
+        click:function(){on_search_thumbnail_clicked(spinner_id,request);return false;}
     }).appendTo('#'+div_id);
 
     $('<img>',{
-        //src:'thumbnail-'+img_index+'.png',
         src:thumbnail_url,
         class:'thumbnail'
     }).appendTo('#'+link_id);
-}
 
-function add_search_thumbnail(index,yt_url,thumbnail_url, yt_code)
-{
-    var img_index=Math.floor((Math.random() * 3) + 1);
-    var link_id='search-thumbnail-link-'+index;
-    var div_id='search-thumbnail-div-'+index;
-    var request={};
-    request.type='add_to_playlist';
-    request.index=index;
-    request.yt_url=yt_url;
-    request.yt_code=yt_code;
-    request.thumbnail_url=thumbnail_url;
-
-    create_search_thumbnail(div_id,link_id,thumbnail_url,request);
-};
-
-function on_search_thumbnail_clicked(old_div_id, old_link_id, request)
-{
-    var div_id=old_div_id;
-    var index=$("#"+div_id).index();
-    var link_id=old_link_id;
-    var img_id='search-results-thumbnail-'+index;
-    var spinner_id='search-results-thumbnail-spinner-'+index;
-
-    /*Remove current Thumbnail*/
-    $("#"+link_id).remove()
-
-    /*Add new Thumbnail*/
-    $('<img>',{
-        id:img_id,
-        src:request.thumbnail_url,
-        class:'thumbnail'
-    }).appendTo('#'+div_id);
-
+    //Create Spinner
     $('<div>',{
         id:spinner_id,
         class:'spinner'
-    }).appendTo('#'+div_id);
+    }).appendTo('#'+div_id).hide();
 
+    //Create Successful Download icon
+    $('<img>',{
+        src:'download.icon.png',
+        id:download_id,
+        class:'delete_icon'
+    }).appendTo('#'+link_id).hide();
+
+    //Create Unsuccessful Download icon
+    $('<img>',{
+        src:'error.icon.png',
+        id:error_id,
+        class:'error_icon'
+    }).appendTo('#'+link_id).hide();
+
+    console.log(data);
+    if (data.downloaded>0)
+    {
+        $('#'+download_id).show();
+    }
+    else if (data.download_error>0)
+    {
+        $('#'+error_id).show();
+    }
+}
+
+function on_search_thumbnail_clicked(spinner_id,request)
+{
+    $('#'+spinner_id).show();
     /*Signal Server*/
     ws.send(JSON.stringify(request));
 };
 
-function on_search_thumbnail_click_processed(old_div_id, thumbnail_url)
+function on_search_thumbnail_click_processed(data)
 {
-    var div_id=old_div_id;
-    var index=$("#"+div_id).index();
-    var link_id='search-thumbnail-link-'+index;
+    var spinner_id=get_search_spinner_id(data);
+    var download_id=get_search_download_id(data);
+    var error_id=get_search_error_id(data);
 
-    /*Remove current Children*/
-    $("#"+old_div_id).empty()
+    $('#'+spinner_id).hide();
 
-    create_search_thumbnail(div_id,link_id,thumbnail_url,request);
+    if (data.download_error>0)
+    {
+        $('#'+download_id).show();
+    }
+
+    if (data.downloaded>0)
+    {
+        $('#'+download_id).show();
+        $('#'+error_id).hide();
+    }
+    else if (data.download_error>0)
+    {
+        $('#'+error_id).show();
+        $('#'+download_id).hide();
+    }
 }
 
-add_to_playlist=function(video_hash,thumbnail_url)
+add_to_playlist=function(data)
 {
-    var div_id='playlist-thumbnail-div-'+video_hash;
-    var link_1_id='playlist-thumbnail-link-1-'+video_hash;
-    var link_2_id='playlist-thumbnail-link-2-'+video_hash;
+    var video_id=data.video_id;
+    var thumbnail_url=data.thumbnail_url;
+    var div_id=get_playlist_thumbnail_div_id(data);
+    var link_1_id=get_playlist_thumbnail_link_1_id(data);
+    var link_2_id=get_playlist_thumbnail_link_2_id(data);
     var play_request={};
     var delete_request={};
 
+    //If the file was not downloaded, ignore
+    if (data.downloaded==0)
+    {
+        return false;
+    }
+
     play_request.type='play';
-    play_request.video_hash=video_hash;
+    play_request.playlist_id=data.playlist_id;
 
     delete_request.type='delete';
-    delete_request.video_hash=video_hash;
+    delete_request.playlist_id=data.playlist_id;
 
-    console.log(play_request);
-    console.log(JSON.stringify(play_request));
     $('<div>',{
         id:div_id,
         class:'playlist_reel_thumbail_div',
@@ -301,15 +343,10 @@ generate_page_numbers=function(begin,end)
     }
 };
 
-function display_search_results(yt_codes)
+function display_search_results(data)
 {
-    //var search_results=get_search_results(0,100);
-
-    console.log(yt_codes);
-    for (var i=0;i<yt_codes.length;i++)
+    for (var i=0;i<data.length;i++)
     {
-        add_search_thumbnail(i,'http://www.youtube.com/results?'+yt_codes[i],'https://img.youtube.com/vi/'+yt_codes[i]+'/0.jpg', yt_codes[i]);
+        create_search_thumbnail(i, data[i]);
     }
-
-    //generate_page_numbers(0,300);
 };

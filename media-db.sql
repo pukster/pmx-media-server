@@ -8,11 +8,28 @@ CREATE TABLE YoutubeMovies (
     url VARCHAR(1023) NOT NULL,
     thumbnail_url VARCHAR(1023) NOT NULL,
     video_id VARCHAR(1023) NOT NULL,
+    html_id VARCHAR(1023) NOT NULL,
     video_filename VARCHAR(1023) NOT NULL,
     video_path VARCHAR(1023) NOT NULL,
+    download_error BOOLEAN DEFAULT FALSE NOT NULL,
+    downloaded BOOLEAN DEFAULT FALSE NOT NULL,
     create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    download_date TIMESTAMP NULL DEFAULT NULL,
     delete_date TIMESTAMP NULL DEFAULT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+
+    UNIQUE KEY video_id (video_id)
 );
 
-GRANT ALL PRIVILEGES ON MediaServer.* TO 'pi'@'%';
+CREATE TABLE Playlist (
+    id INT NOT NULL AUTO_INCREMENT,
+    video_fid INT NOT NULL,
+    html_id VARCHAR(1023) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (id),
+
+    UNIQUE KEY html_id (html_id)
+);
+
+GRANT ALL PRIVILEGES ON MediaServer.* TO 'pi'@'%' IDENTIFIED BY 'prilyx123' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
