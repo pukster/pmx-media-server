@@ -10,7 +10,7 @@ import os
 import mysql.connector
 
 videos=[]
-video_dir='/path/to/video_files' #UPDATE THIS
+video_dir='/path/to/videos' #UPDATE THIS
 mydb=None
 yt_url='https://www.youtube.com/watch?v='
 yt_thumbnail='https://img.youtube.com/vi'
@@ -206,7 +206,7 @@ def read_all_playlists():
 
     mycursor=mydb.cursor()
 
-    mycursor.execute("SELECT Playlist.id, Playlist.video_fid,Playlist.html_id,Playlist.active,YoutubeMovies.url,YoutubeMovies.thumbnail_url from Playlist INNER JOIN YoutubeMovies ON Playlist.video_fid=YoutubeMovies.id WHERE Playlist.delete_date IS NULL")
+    mycursor.execute("SELECT Playlist.id, Playlist.video_fid,Playlist.html_id,Playlist.active,YoutubeMovies.url,YoutubeMovies.thumbnail_url,YoutubeMovies.video_filename from Playlist INNER JOIN YoutubeMovies ON Playlist.video_fid=YoutubeMovies.id WHERE Playlist.delete_date IS NULL")
     results=mycursor.fetchall()
 
     mycursor.close()
@@ -221,6 +221,7 @@ def read_all_playlists():
         data['active']=result[3]
         data['url']=result[4]
         data['thumbnail_url']=result[5]
+        data['video_filename']=result[6]
 
         full_data.append(data)
 
@@ -463,33 +464,115 @@ def retire_playlist_video(playlist_id):
     mycursor.close()
 
 #TODO
-#Freelancer to implement Dbus signalling scheme here
-def play_video_pmxplayer(playlist_id):
+#Freelancer to implement signalling scheme here
+#Assume first ip address as the master and the
+#others as the slave. Pmxplayers should launch and
+#wait for instructions. They should never shut down,
+#even if their video has finished, unless signalled
+#to do so
+def launch_pmxplayers(ip_addresses):
     pass
 
 #TODO
-#Freelancer to implement Dbus signalling scheme here
-def pause_video_pmxplayer():
+#Freelancer to implement signalling scheme here
+#Release the pmxplayer instances and allow them to
+#exit.
+def shut_down_pmxplayers():
     pass
 
 #TODO
-#Freelancer to implement Dbus signalling scheme here
-def stop_video_pmxplayer():
+#Freelancer to implement signalling scheme here
+#Signal pmxplayer instances to start playback
+# @video_filename filename of video to be played on
+# all raspis. It is assumed that the same video
+# folder will be mounted across all raspis as well
+# as this media-server.
+def pmxplayer_play(video_filename):
     pass
+
+#TODO
+#Freelancer to implement signalling scheme here
+#Signal the pmxplayer instances to pause playback
+def pmxplayer_pause():
+    pass
+
+#TODO
+#Freelancer to implement signalling scheme here
+#Signal the pmxplayer instances to resume playback
+def pmxplayer_unpause():
+    pass
+
+#TODO
+#Freelancer to implement signalling scheme here
+#Signal the pmxplayer instances to stop playback
+def pmxplayer_stop():
+    pass
+
+#TODO
+#Freelancer to implement signalling scheme here
+#Listen for pmxplayer to signal that the playback
+#finished. Should play next video in playlist.
+def pmxplayer_finished():
+    pass
+
+#move to the next playlist video. Return to first if
+#at end of list
+#NOTE: This method has not been tested
+def next_playlist_video ():
+    playlist_videos=read_all_playlists()
+
+    #Should never be called if playlist is empty
+    if (len(playlist_videos)==0):
+        print("Error: playlist empty")
+        raise Exception
+
+    #If it is the only file, auto repeat
+    if (len(playlist_videos)==0):
+        video_filename=playlist_videos[0]['video_filename']
+    else:
+        for i,elem in enumerate(playlist_videos):
+            if (elem['active']>0):
+                break
+
+        if (i > len(playlist_videos)):
+            print("Error: Active playlist not found")
+            raise Exception
+        else:
+            deactivate_active_playlist_video()
+            #It's the last one, go back to the beginning
+            if (i==len(playlist_videos)):
+                set_active_playlist_video(playlist_videos[0]['id'])
+                video_filename=playlist_videos[0]['video_filename']
+            #Just go to the next one (i already incremented)
+            else:
+                set_active_playlist_video(playlist_videos[i]['id'])
+                video_filename=playlist_videos[i]['video_filename']
+
+    pmxplayer_play(video_filename)
 
 def play_playlist_video (playlist_id):
+    #If there is a video playing OR paused
+    if (is_a_video_playing()):
+        pmxplayer_stop()
+
     unpause_playlist_video()
     deactivate_active_playlist_video()
     set_active_playlist_video(playlist_id)
 
-    play_video_pmxplayer(playlist_id)
+    pmxplayer_play(playlist_id)
     print("Playing Playlist Video {}".format(playlist_id))
 
 def pause_playlist_video (playlist_id):
     pause_playlist_video(playlist_id)
 
-    pause_video_pmxplayer()
+    pmxplayer_pause()
     print("Pausing Playlist Video {}".format(playlist_id))
+
+def unpause_playlist_video (playlist_id):
+    unpause_playlist_video()
+
+    pmxplayer_unpause()
+    print("Unpausing Playlist Video {}".format(playlist_id))
 
 def delete_playlist_video (playlist_id):
     retire_playlist_video(playlist_id)
