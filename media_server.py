@@ -37,7 +37,6 @@ def read_yt_video_db (video_id, date=False):
 
     mycursor=mydb.cursor()
 
-    #print("Select id,title,url,thumbnail_url,video_id,html_id,video_filename,video_path,download_error,downloaded,create_date,download_date,delete_date From YoutubeMovies Where video_id='{}'".format(video_id))
     mycursor.execute("SELECT id,title,url,thumbnail_url,video_id,html_id,video_filename,video_path,download_error,downloaded,create_date,download_date,delete_date From YoutubeMovies Where video_id='{}'".format(video_id))
 
     results=mycursor.fetchall()
@@ -70,7 +69,6 @@ def read_yt_video_db (video_id, date=False):
 
 def is_yt_video_in_db (video_id):
     if (len(read_yt_video_db(video_id))>0):
-        #print ('Video already in DB: {}'.format(video_id))
         return True
     else:
         return False
@@ -146,10 +144,6 @@ def mark_yt_video_downloaded_db (video_id):
     mydb.commit()
 
     mycursor.close()
-
-# REMOVE
-def get_yt_url (code):
-    return "http://www.youtube.com/watch?v="+code
 
 def search_video (search_string,start_index=0,finish_index=10):
     query_string = urllib.parse.urlencode({"search_query" : search_string})
