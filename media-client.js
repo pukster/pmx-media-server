@@ -427,6 +427,12 @@ function play_playlist_video(data)
     hide_playlist_thumbnail_play_icon(data);
     show_playlist_thumbnail_pause_icon(data);
 
+    //Change Thumbnail to now point to pause video
+    var link_1_id=get_playlist_thumbnail_link_1_id(data);
+    $('#'+link_1_id).unbind('click');
+    $('#'+link_1_id).click(function(){pause_playlist_video(data);return false;});
+    //$('#'+link_1_id).attr('onclick','function(){pause_playlist_video(data);return false;}');
+
     //Activate new active playlist
     for (var i=0;i<playlist.length;i++)
     {
@@ -458,6 +464,12 @@ function pause_playlist_video(data)
     //Hide pause icon and show play icon
     $('#'+play_div_id).show();
     $('#'+pause_div_id).hide();
+
+    //Change Thumbnail to now point to play video
+    var link_1_id=get_playlist_thumbnail_link_1_id(data);
+    $('#'+link_1_id).unbind('click');
+    $('#'+link_1_id).click(function(){play_playlist_video(data);return false;});
+    //$('#'+link_1_id).attr('onclick','function(){play_playlist_video(data);return false;}');
 
     pause_request.type='pause_playlist_video';
     pause_request.playlist_id=data.id;

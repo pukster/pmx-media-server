@@ -423,7 +423,7 @@ def set_active_playlist_video(playlist_id):
 
     mycursor.close()
 
-def unpause_playlist_video():
+def unpause_playlist_video_db():
     global mydb
 
     mycursor=mydb.cursor()
@@ -435,7 +435,7 @@ def unpause_playlist_video():
 
     mycursor.close()
 
-def pause_playlist_video(playlist_id):
+def pause_playlist_video_db(playlist_id):
     global mydb
 
     mycursor=mydb.cursor()
@@ -555,7 +555,7 @@ def play_playlist_video (playlist_id):
     if (is_a_video_playing()):
         pmxplayer_stop()
 
-    unpause_playlist_video()
+    unpause_playlist_video_db()
     deactivate_active_playlist_video()
     set_active_playlist_video(playlist_id)
 
@@ -563,13 +563,13 @@ def play_playlist_video (playlist_id):
     print("Playing Playlist Video {}".format(playlist_id))
 
 def pause_playlist_video (playlist_id):
-    pause_playlist_video(playlist_id)
+    pause_playlist_video_db(playlist_id)
 
     pmxplayer_pause()
     print("Pausing Playlist Video {}".format(playlist_id))
 
 def unpause_playlist_video (playlist_id):
-    unpause_playlist_video()
+    unpause_playlist_video_db()
 
     pmxplayer_unpause()
     print("Unpausing Playlist Video {}".format(playlist_id))
