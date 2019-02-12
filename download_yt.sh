@@ -19,6 +19,8 @@ else
     exit 2
 fi
 
-cd /media/peyman/Alpha/megashare/videos/raspi
+cd /path/to/video_files #UPDATE THIS
 
 youtube-dl -n -f 'bestvideo[ext=mp4]+bestaudio/bestvideo+bestaudio' --merge-output-format mp4 --output "$2" "$1"
+
+exit 0

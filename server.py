@@ -8,6 +8,11 @@ def new_client(client, server):
 
     media_server.connect_db()
 
+    reply={}
+    reply['type']='connection_established';
+    reply['data']=media_server.read_all_playlists()
+    server.send_message(client,json.dumps(reply))
+
     # Debug
     return
     video_id='M7XM597XO94'
@@ -28,21 +33,17 @@ def message_received(client, server, message):
         message=json.loads(message)
 
         reply={}
+        reply['type']=message['type']
         if (message['type']=='search_yt'):
-            reply={}
-            reply['type']='search_yt'
-            reply['data']=media_server.search_yt(message['search_string'],0,25)
-            #print (reply['data'])
+            reply['data']=media_server.search_video(message['search_string'],0,25)
         elif (message['type']=='add_to_playlist'):
-            reply['type']='add_to_playlist'
-            reply['data']=media_server.process_video(message['video_id'])
-        elif (message['type']=='play'):
-            reply['type']='play'
-            print (message)
-            reply['success']=media_server.play(message['video_hash'])
-        elif (message['type']=='delete'):
-            reply['type']='delete'
-            reply['success']=media_server.delete(message['video_hash'])
+            reply['data']=media_server.search_thumbnail_clicked(message['video_id'])
+        elif (message['type']=='play_playlist_video'):
+            reply['success']=media_server.play_playlist_video(message['playlist_id'])
+        elif (message['type']=='pause_playlist_video'):
+            reply['success']=media_server.pause_playlist_video(message['playlist_id'])
+        elif (message['type']=='delete_playlist_video'):
+            reply['success']=media_server.delete_playlist_video(message['playlist_id'])
 
         server.send_message(client,json.dumps(reply))
 

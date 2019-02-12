@@ -88,14 +88,6 @@ body {
 	left:0;
 }
 
-.play_icon {
-	position:absolute;
-	z-index:2;
-	width:50;
-	top:27; /*(104-50)/2 */
-	left:67.5; /*(185-50)/2 */
-}
-
 .delete_icon {
 	position:absolute;
 	z-index:2;
@@ -128,4 +120,96 @@ body {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+.checkmark,.crossmark {
+	position:absolute;
+	z-index:2;
+	top:10; /*TOP*/
+	left:140; /*(185-40-5)*/
+    display:inline-block;
+    width: 42px;
+    height:42px;
+    -ms-transform: rotate(45deg); /* IE 9 */
+    -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+    transform: rotate(45deg);
+}
+
+.checkmark_circle {
+    position: absolute;
+    width:42px;
+    height:42px;
+    background-color: green;
+    border-radius:21px;
+    left:0;
+    top:0;
+}
+
+.checkmark_stem {
+    position: absolute;
+    width:3px;
+    height:23px;
+    background-color:#fff;
+    left:21px;
+    top:6px;
+}
+
+.checkmark_kick {
+    position: absolute;
+    width:12px;
+    height:3px;
+    background-color:#fff;
+    left:11px;
+    top:26px;
+}
+
+
+.crossmark_circle {
+    position: absolute;
+    width:42px;
+    height:42px;
+    background-color: red;
+    border-radius:21px;
+    left:0;
+    top:0;
+}
+
+.crossmark_stem {
+    position: absolute;
+    width:3px;
+    height:31px;
+    background-color:#fff;
+    left:18px;
+    top:6px;
+}
+
+.crossmark_kick {
+    position: absolute;
+    width:31px;
+    height:3px;
+    background-color:#fff;
+    left:5px;
+    top:18px;
+}
+
+.play_icon {
+	position:absolute;
+	z-index:2;
+	width:50;
+	top:57; /*(104-50)/2 */
+	left:97.5; /*(185-50)/2 */
+    border-top: 15px solid transparent;
+    border-left: 20px solid #00FFFF;
+    border-bottom: 15px solid transparent;
+}
+
+.pause_icon {
+	position:absolute;
+	z-index:2;
+	top:47; /*(104-50)/2 */
+	left:97.5; /*(185-50)/2 */
+    width:4px;
+    height:32px;
+    border-right: 8px solid #00FFFF;
+    border-left: 8px solid #00FFFF;
 }
