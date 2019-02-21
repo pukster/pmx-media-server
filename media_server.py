@@ -8,12 +8,18 @@ import random
 import string
 import os
 import mysql.connector
+import dbus
 
 videos=[]
 video_dir='/path/to/videos' #UPDATE THIS
 mydb=None
 yt_url='https://www.youtube.com/watch?v='
 yt_thumbnail='https://img.youtube.com/vi'
+
+dbus_name='org.mpris.MediaPlayer2.omxplayer'
+dbus_port=55501
+PMXPLAYER_DBUS_PATH_SERVER='/org/mpris/MediaPlayer2'
+PMXPLAYER_DBUS_INTERFACE_PLAYER='org.mpris.MediaPlayer2.Player'
 
 def connect_db ():
     global mydb
@@ -226,6 +232,19 @@ def read_all_playlists():
         full_data.append(data)
 
     return full_data
+
+def get_filename_by_playlist_id(playlist_id):
+    global mydb
+
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT Playlist.id, Playlist.video_fid, YoutubeMovies.video_filename FROM Playlist INNER JOIN YoutubeMovies ON Playlist.video_fid=YoutubeMovies.id WHERE Playlist.delete_date IS NULL and Playlist.id=%s" % playlist_id)
+    results=mycursor.fetchall()
+    mycursor.close()
+
+    if not results:
+        return None
+
+    return results[0][2]
 
 def get_playlist_active_count():
     global mydb
@@ -471,14 +490,31 @@ def retire_playlist_video(playlist_id):
 #even if their video has finished, unless signalled
 #to do so
 def launch_pmxplayers(ip_addresses):
-    pass
+    if not ip_addresses:
+        return
+
+    global mydb
+
+    mycursor = mydb.cursor()
+
+    pmxlist = ["('%s', %d)" % (ip_address, 0 if i else 1) for (i, ip_address) in enumerate(ip_addresses)]
+    sql = "INSERT INTO PmxPlayers (ip_address, is_master) VALUES %s" % ','.join(pmxlist)
+    mycursor.execute(sql)
+    mydb.commit()
+
+    mycursor.close()
 
 #TODO
 #Freelancer to implement signalling scheme here
 #Release the pmxplayer instances and allow them to
 #exit.
 def shut_down_pmxplayers():
-    pass
+    global mydb
+
+    mycursor = mydb.cursor()
+    mycursor.execute("DELETE FROM PmxPlayers")
+    mydb.commit()
+    mycursor.close()
 
 #TODO
 #Freelancer to implement signalling scheme here
@@ -488,32 +524,103 @@ def shut_down_pmxplayers():
 # folder will be mounted across all raspis as well
 # as this media-server.
 def pmxplayer_play(video_filename):
-    pass
+    global mydb
+
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT ip_address, is_master From PmxPlayers")
+    results=mycursor.fetchall()
+
+    for row in results:
+        try:
+            ip_address = row[0]
+            bus = dbus.bus.BusConnection("tcp:host=%s,port=%d" % (ip_address, dbus_port))
+            obj = bus.get_object(dbus_name, PMXPLAYER_DBUS_PATH_SERVER, introspect=False)
+            ifk = dbus.Interface(obj, PMXPLAYER_DBUS_INTERFACE_PLAYER)
+            video_path = str(ifk.GetSource())
+            if video_filename != video_path.split('/')[-1]:
+                ifk.OpenUri(video_dir+'/'+video_filename)
+            ifk.Play()
+        except Exception as e:
+            print(e)
+
+    mycursor.close()
+
 
 #TODO
 #Freelancer to implement signalling scheme here
 #Signal the pmxplayer instances to pause playback
 def pmxplayer_pause():
-    pass
+    global mydb
+
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT ip_address, is_master From PmxPlayers")
+    results=mycursor.fetchall()
+
+    for row in results:
+        try:
+            ip_address = row[0]
+            bus = dbus.bus.BusConnection("tcp:host=%s,port=%d" % (ip_address, dbus_port))
+            obj = bus.get_object(dbus_name, PMXPLAYER_DBUS_PATH_SERVER, introspect=False)
+            ifk = dbus.Interface(obj, PMXPLAYER_DBUS_INTERFACE_PLAYER)
+            ifk.Pause()
+        except Exception as e:
+            print(e)
+
+    mycursor.close()
 
 #TODO
 #Freelancer to implement signalling scheme here
 #Signal the pmxplayer instances to resume playback
 def pmxplayer_unpause():
-    pass
+    global mydb
+
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT ip_address, is_master From PmxPlayers")
+    results=mycursor.fetchall()
+
+    for row in results:
+        try:
+            ip_address = row[0]
+            bus = dbus.bus.BusConnection("tcp:host=%s,port=%d" % (ip_address, dbus_port))
+            obj = bus.get_object(dbus_name, PMXPLAYER_DBUS_PATH_SERVER, introspect=False)
+            ifk = dbus.Interface(obj, PMXPLAYER_DBUS_INTERFACE_PLAYER)
+            ifk.Play()
+        except Exception as e:
+            print(e)
+
+    mycursor.close()
 
 #TODO
 #Freelancer to implement signalling scheme here
 #Signal the pmxplayer instances to stop playback
 def pmxplayer_stop():
-    pass
+    global mydb
+
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT ip_address, is_master From PmxPlayers")
+    results=mycursor.fetchall()
+
+    for row in results:
+        try:
+            ip_address = row[0]
+            bus = dbus.bus.BusConnection("tcp:host=%s,port=%d" % (ip_address, dbus_port))
+            obj = bus.get_object(dbus_name, PMXPLAYER_DBUS_PATH_SERVER, introspect=False)
+            ifk = dbus.Interface(obj, PMXPLAYER_DBUS_INTERFACE_PLAYER)
+            ifk.Pause()
+            ifk.SetPosition(dbus.ObjectPath("/not/used"), dbus.Int64(0))
+        except Exception as e:
+            print(e)
+
+    mycursor.close()
 
 #TODO
 #Freelancer to implement signalling scheme here
 #Listen for pmxplayer to signal that the playback
 #finished. Should play next video in playlist.
-def pmxplayer_finished():
-    pass
+def pmxplayer_next(video_filename):
+    pmxplayer_stop()
+    pmxplayer_play(video_filename)
+
 
 #move to the next playlist video. Return to first if
 #at end of list
@@ -551,15 +658,12 @@ def next_playlist_video ():
     pmxplayer_play(video_filename)
 
 def play_playlist_video (playlist_id):
-    #If there is a video playing OR paused
-    if (is_a_video_playing()):
-        pmxplayer_stop()
-
     unpause_playlist_video_db()
     deactivate_active_playlist_video()
     set_active_playlist_video(playlist_id)
 
-    pmxplayer_play(playlist_id)
+    video_filename = get_filename_by_playlist_id(playlist_id)
+    pmxplayer_play(video_filename)
     print("Playing Playlist Video {}".format(playlist_id))
 
 def pause_playlist_video (playlist_id):

@@ -34,5 +34,13 @@ CREATE TABLE Playlist (
     UNIQUE KEY html_id (html_id)
 );
 
+CREATE TABLE PmxPlayers (
+    id INT NOT NULL AUTO_INCREMENT,
+    ip_address VARCHAR(1023) NOT NULL,
+    is_master BOOLEAN NOT NULL,
+    PRIMARY KEY (id)
+);
+
+
 GRANT ALL PRIVILEGES ON MediaServer.* TO 'pmxuser'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
