@@ -21,6 +21,6 @@ fi
 
 cd /path/to/video_files #UPDATE THIS
 
-youtube-dl -n -f 'bestvideo[ext=mp4]+bestaudio/bestvideo+bestaudio' --merge-output-format mp4 --output "$2" "$1"
+youtube-dl -n -f 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4' --output "$2" "$1"
 
 exit 0
